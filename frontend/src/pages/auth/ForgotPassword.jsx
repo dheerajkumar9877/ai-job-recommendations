@@ -13,7 +13,7 @@ function ForgotPassword() {
 
   const [form, setForm] = useState({
     email: "",
-    code: "",
+    otp: "",
     password: "",
     confirmPassword: "",
   });
@@ -29,7 +29,7 @@ function ForgotPassword() {
     });
   };
 
-  // STEP 1 - Send Code
+  // STEP 1 - Send OTP
   const handleSendCode = async (e) => {
     e.preventDefault();
 
@@ -52,7 +52,7 @@ function ForgotPassword() {
     }
   };
 
-  // STEP 2 - Verify Code
+  // STEP 2 - Verify OTP
   const handleVerifyCode = async (e) => {
     e.preventDefault();
 
@@ -61,7 +61,8 @@ function ForgotPassword() {
     setLoading(true);
 
     try {
-      await verifyResetCode(form.email, form.code);
+      // IMPORTANT: backend expects email + otp
+      await verifyResetCode(form.email, form.otp);
 
       setMessage("Code verified successfully.");
       setStep(3);
@@ -90,9 +91,9 @@ function ForgotPassword() {
     setLoading(true);
 
     try {
+      // Backend updatePassword expects email + password
       await resetPassword(
         form.email,
-        form.code,
         form.password
       );
 
@@ -113,7 +114,6 @@ function ForgotPassword() {
 
   return (
     <div className="min-h-screen bg-slate-100 flex items-center justify-center px-4 py-8">
-
       <div className="w-full max-w-lg bg-white rounded-2xl shadow-xl px-8 py-9">
 
         {/* Brand */}
@@ -183,7 +183,9 @@ function ForgotPassword() {
                 font-semibold hover:bg-blue-700 transition
                 disabled:bg-blue-300 disabled:cursor-not-allowed"
               >
-                {loading ? "Sending..." : "Send verification code"}
+                {loading
+                  ? "Sending..."
+                  : "Send verification code"}
               </button>
             </form>
           </>
@@ -219,12 +221,12 @@ function ForgotPassword() {
                 </label>
 
                 <input
-                  name="code"
+                  name="otp"
                   type="text"
-                  placeholder="Enter 6-digit code"
-                  value={form.code}
+                  placeholder="Enter 4-digit code"
+                  value={form.otp}
                   onChange={handleChange}
-                  maxLength={6}
+                  maxLength={4}
                   required
                   className="w-full px-4 py-3 rounded-lg border border-slate-300
                   text-slate-900 outline-none tracking-[0.4em]
@@ -258,7 +260,15 @@ function ForgotPassword() {
 
             <button
               type="button"
-              onClick={() => setStep(1)}
+              onClick={() => {
+                setStep(1);
+                setForm({
+                  ...form,
+                  otp: "",
+                });
+                setError("");
+                setMessage("");
+              }}
               className="w-full mt-3 py-3 text-sm font-medium
               text-slate-500 hover:text-blue-600"
             >
@@ -345,7 +355,9 @@ function ForgotPassword() {
                 font-semibold hover:bg-blue-700 transition
                 disabled:bg-blue-300 disabled:cursor-not-allowed"
               >
-                {loading ? "Changing password..." : "Reset password"}
+                {loading
+                  ? "Changing password..."
+                  : "Reset password"}
               </button>
             </form>
           </>

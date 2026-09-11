@@ -31,12 +31,12 @@ export const forgotPassword = async (email) => {
 };
 
 // Verify reset code
-export const verifyResetCode = async (email, code) => {
+export const verifyResetCode = async (email, otp) => {
   const response = await axios.post(
     `${API_URL}/verify-reset-code`,
     {
       email,
-      code,
+      otp,
     }
   );
 
@@ -46,14 +46,12 @@ export const verifyResetCode = async (email, code) => {
 // Reset password
 export const resetPassword = async (
   email,
-  code,
   password
 ) => {
   const response = await axios.put(
     `${API_URL}/reset-password`,
     {
       email,
-      code,
       password,
     }
   );

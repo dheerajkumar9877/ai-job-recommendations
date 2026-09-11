@@ -95,12 +95,37 @@ function Profile() {
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
 
                 {/* Avatar */}
-                <div className="w-24 h-24 rounded-full bg-blue-600 text-white flex items-center justify-center text-3xl font-bold shrink-0 shadow-sm">
-                  {(form.name || "C")
-                    .charAt(0)
-                    .toUpperCase()}
-                </div>
+                <div className="flex flex-col items-center gap-3">
+                  <label className="cursor-pointer">
+                    <div className="w-24 h-24 rounded-full overflow-hidden bg-blue-600 text-white flex items-center justify-center text-3xl font-bold shadow-sm">
+                      {form.profilePic ? (
+                        <img
+                          src={URL.createObjectURL(form.profilePic)}
+                          alt="Profile"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        (form.name || "C").charAt(0).toUpperCase()
+                      )}
+                    </div>
 
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          profilePic: e.target.files[0],
+                        })
+                      }
+                    />
+                  </label>
+
+                  <p className="text-sm text-blue-600">
+                    Click to change photo
+                  </p>
+                </div>
                 <div className="text-center sm:text-left">
 
                   <h2 className="text-2xl font-bold text-slate-900">
