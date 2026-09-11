@@ -5,14 +5,14 @@ const db = require('./config/db');
 
 require("dotenv").config();
 
+const authRouters = require('./routes/authRouters');
+
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-app.get("/", (req, res) => {
-    res.send("Job Recommendation Backend is running");
-});
+app.use('/' , authRouters);
 
 const PORT = process.env.PORT || 5000;
 

@@ -3,26 +3,6 @@ const bcrypt = require('bcrypt')
 
 class System{
 
-    async create(
-        name ,
-        email ,
-        password 
-    ) {
-        const hashedPassword  = await bcrypt.hash(password ,10 );
-
-        const sql = `INSERT INTO users (name , email , password)
-                        VALUES(? , ? ,?)`
-        const values = [
-            name ,
-            email ,
-            hashedPassword
-        ];
-
-        const [response]  = await db.execute(sql , values);
-
-        return response ;
-    }
-
     async checkEmail(
         email  
     ){
@@ -36,6 +16,29 @@ class System{
 
         return response[0] ;
     }
+
+    async create(
+        name ,
+        email ,
+        password ,
+        role
+    ) {
+        const hashedPassword  = await bcrypt.hash(password ,10 );
+
+        const sql = `INSERT INTO users (name , email , password , role)
+                        VALUES(? , ? ,? ,?)`
+        const values = [
+            name ,
+            email ,
+            hashedPassword,
+            role
+        ];
+
+        const [response]  = await db.execute(sql , values);
+
+        return response ;
+    }
+
 
     async login(
         email ,
@@ -56,7 +59,7 @@ class System{
         return user ;
     }
 
-    async forget(
+    async updatePassword(
         email , 
         password
     ){

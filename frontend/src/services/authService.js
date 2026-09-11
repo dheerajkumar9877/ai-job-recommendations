@@ -1,40 +1,62 @@
-const API_URL = "http://localhost:5000/api/auth";
+import axios from "axios";
+
+const API_URL = "http://localhost:5000";
 
 export const loginUser = async (email, password) => {
-  const response = await fetch(`${API_URL}/login`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      email,
-      password,
-    }),
+  const response = await axios.post(`${API_URL}/login`, {
+    email,
+    password,
   });
 
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.message || "Login failed");
-  }
-
-  return data;
+  return response.data;
 };
 
 export const registerUser = async (userData) => {
-  const response = await fetch(`${API_URL}/register`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(userData),
-  });
+  const response = await axios.post(
+    `${API_URL}/register`,
+    userData
+  );
 
-  const data = await response.json();
+  return response.data;
+};
 
-  if (!response.ok) {
-    throw new Error(data.message || "Registration failed");
-  }
+// Forgot Password
+export const forgotPassword = async (email) => {
+  const response = await axios.post(
+    `${API_URL}/forgot-password`,
+    { email }
+  );
 
-  return data;
+  return response.data;
+};
+
+// Verify reset code
+export const verifyResetCode = async (email, code) => {
+  const response = await axios.post(
+    `${API_URL}/verify-reset-code`,
+    {
+      email,
+      code,
+    }
+  );
+
+  return response.data;
+};
+
+// Reset password
+export const resetPassword = async (
+  email,
+  code,
+  password
+) => {
+  const response = await axios.put(
+    `${API_URL}/reset-password`,
+    {
+      email,
+      code,
+      password,
+    }
+  );
+
+  return response.data;
 };
