@@ -24,6 +24,7 @@ import Applicants from "./pages/recruiter/Applicants";
 import CandidateDetails from "./pages/recruiter/CandidateDetails";
 import CompanyProfile from "./pages/recruiter/CompanyProfile";
 import RecruiterInterviews from "./pages/recruiter/Interviews";
+import RecruiterProfile from "./pages/recruiter/Profile";
 
 
 function App() {
@@ -46,6 +47,7 @@ function App() {
         <Route path="/candidate/profile" element={<Profile />} />
 
         <Route path="/recruiter/dashboard" element={<RecruiterDashboard />} />
+        <Route path="/recruiter/Profile" element={<RecruiterProfile />} />
         <Route path="/recruiter/create-job" element={<CreateJob />} />
         <Route path="/recruiter/manage-jobs" element={<ManageJobs />} />
         <Route path="/recruiter/applicants" element={<Applicants />} />

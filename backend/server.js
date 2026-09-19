@@ -6,6 +6,7 @@ const db = require('./config/db');
 require("dotenv").config();
 
 const authRouters = require('./routes/authRouters');
+const recruiterRouter = require('./routes/recruiterRouters');
 
 const app = express();
 
@@ -13,7 +14,7 @@ app.use(cors());
 app.use(express.json());
 
 
-
+app.use('/recruiter' , recruiterRouter);
 app.use('/' , authRouters);
 
 const PORT = process.env.PORT ;

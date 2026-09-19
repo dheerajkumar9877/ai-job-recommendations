@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import RecruiterSideBar from "../auth/RecruiterSideBar";
 
 function ManageJobs() {
   const navigate = useNavigate();
@@ -62,6 +63,8 @@ function ManageJobs() {
     },
   ]);
 
+  // ================= FILTER + SEARCH =================
+
   const filteredJobs = jobs.filter((job) => {
     const matchesFilter =
       filter === "All" || job.status === filter;
@@ -73,6 +76,8 @@ function ManageJobs() {
     return matchesFilter && matchesSearch;
   });
 
+  // ================= DELETE JOB =================
+
   const deleteJob = (id) => {
     const confirmDelete = window.confirm(
       "Are you sure you want to delete this job?"
@@ -80,522 +85,468 @@ function ManageJobs() {
 
     if (!confirmDelete) return;
 
-    setJobs(jobs.filter((job) => job.id !== id));
+    setJobs((prevJobs) =>
+      prevJobs.filter((job) => job.id !== id)
+    );
+  };
+
+  // ================= VIEW JOB =================
+
+  const viewJob = (id) => {
+    navigate(`/recruiter/jobs/${id}`);
+  };
+
+  // ================= EDIT JOB =================
+
+  const editJob = (id) => {
+    navigate(`/recruiter/jobs/${id}/edit`);
   };
 
   return (
     <div className="min-h-screen bg-slate-100">
 
-      {/* ================= HEADER ================= */}
-      <header className="bg-white border-b border-slate-200 px-6 md:px-10 py-5">
+      {/* ================= SIDEBAR ================= */}
+      <RecruiterSideBar />
 
-        <div className="flex flex-col md:flex-row md:items-center
-          md:justify-between gap-4">
+      {/* ================= MAIN AREA ================= */}
+      <div className="md:ml-64 min-h-screen">
 
-          <div>
-            <p className="text-xs font-bold tracking-[0.2em] text-blue-600">
-              RECRUITER
-            </p>
+        {/* ================= HEADER ================= */}
+        <header className="bg-white border-b border-slate-200 px-6 md:px-10 py-5">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
 
-            <h1 className="text-3xl font-bold text-slate-900 mt-1">
-              Manage Jobs
-            </h1>
+            {/* HEADER LEFT */}
+            <div>
+              <p className="text-xs font-bold tracking-[0.2em] text-blue-600">
+                RECRUITER
+              </p>
 
-            <p className="text-sm text-slate-500 mt-1">
-              Create, manage and track your job postings.
-            </p>
-          </div>
+              <h1 className="text-3xl font-bold text-slate-900 mt-1">
+                Manage Jobs
+              </h1>
 
-          <button
-            onClick={() => navigate("/recruiter/create-job")}
-            className="px-5 py-3 rounded-lg bg-blue-600
-            text-white font-semibold hover:bg-blue-700
-            transition shadow-sm"
-          >
-            + Post a Job
-          </button>
-
-        </div>
-
-      </header>
-
-
-      {/* ================= MAIN ================= */}
-      <main className="max-w-7xl mx-auto p-6 md:p-10">
-
-
-        {/* ================= STATISTICS ================= */}
-        <section className="grid grid-cols-1 sm:grid-cols-2
-          lg:grid-cols-4 gap-5 mb-8">
-
-          {/* Active */}
-          <div className="bg-white rounded-2xl border
-            border-slate-200 shadow-sm p-6">
-
-            <p className="text-sm font-medium text-slate-500">
-              Active Jobs
-            </p>
-
-            <h2 className="text-3xl font-bold text-slate-900 mt-2">
-              {jobs.filter((job) => job.status === "Active").length}
-            </h2>
-
-            <p className="text-xs text-blue-600 mt-2">
-              Currently hiring
-            </p>
-
-          </div>
-
-
-          {/* Applicants */}
-          <div className="bg-white rounded-2xl border
-            border-slate-200 shadow-sm p-6">
-
-            <p className="text-sm font-medium text-slate-500">
-              Total Applicants
-            </p>
-
-            <h2 className="text-3xl font-bold text-slate-900 mt-2">
-              {jobs.reduce(
-                (total, job) => total + job.applicants,
-                0
-              )}
-            </h2>
-
-            <p className="text-xs text-green-600 mt-2">
-              Across all jobs
-            </p>
-
-          </div>
-
-
-          {/* Shortlisted */}
-          <div className="bg-white rounded-2xl border
-            border-slate-200 shadow-sm p-6">
-
-            <p className="text-sm font-medium text-slate-500">
-              Shortlisted
-            </p>
-
-            <h2 className="text-3xl font-bold text-slate-900 mt-2">
-              {jobs.reduce(
-                (total, job) => total + job.shortlisted,
-                0
-              )}
-            </h2>
-
-            <p className="text-xs text-purple-600 mt-2">
-              Potential candidates
-            </p>
-
-          </div>
-
-
-          {/* Closed */}
-          <div className="bg-white rounded-2xl border
-            border-slate-200 shadow-sm p-6">
-
-            <p className="text-sm font-medium text-slate-500">
-              Closed Jobs
-            </p>
-
-            <h2 className="text-3xl font-bold text-slate-900 mt-2">
-              {jobs.filter((job) => job.status === "Closed").length}
-            </h2>
-
-            <p className="text-xs text-slate-500 mt-2">
-              Completed postings
-            </p>
-
-          </div>
-
-        </section>
-
-
-        {/* ================= JOB SECTION ================= */}
-        <section className="bg-white rounded-2xl
-          border border-slate-200 shadow-sm">
-
-
-          {/* ================= TOP ================= */}
-          <div className="p-6 md:p-8 border-b border-slate-200">
-
-            <div className="flex flex-col lg:flex-row
-              lg:items-center lg:justify-between gap-5">
-
-              <div>
-                <h2 className="text-lg font-bold text-slate-900">
-                  Your Job Postings
-                </h2>
-
-                <p className="text-sm text-slate-500 mt-1">
-                  Manage all your job opportunities.
-                </p>
-              </div>
-
-
-              {/* Search */}
-              <div className="relative w-full lg:w-80">
-
-                <input
-                  type="text"
-                  placeholder="Search jobs..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg
-                  border border-slate-300
-                  text-slate-900 outline-none
-                  placeholder:text-slate-400
-                  focus:border-blue-500
-                  focus:ring-2 focus:ring-blue-100"
-                />
-
-              </div>
-
+              <p className="text-sm text-slate-500 mt-1">
+                Create, manage and track your job postings.
+              </p>
             </div>
 
+            {/* POST JOB */}
+            <button
+              onClick={() => navigate("/recruiter/post-job")}
+              className="px-5 py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition shadow-sm"
+            >
+              + Post a Job
+            </button>
 
-            {/* Filters */}
-            <div className="flex flex-wrap gap-2 mt-6">
+          </div>
+        </header>
 
-              {["All", "Active", "Closed", "Draft"].map(
-                (item) => (
+        {/* ================= MAIN ================= */}
+        <main className="max-w-7xl mx-auto p-6 md:p-10">
 
-                  <button
-                    key={item}
-                    onClick={() => setFilter(item)}
-                    className={`px-4 py-2 rounded-lg
-                      text-sm font-semibold transition
-                      ${
+          {/* ================= STATISTICS ================= */}
+          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+
+            {/* ACTIVE JOBS */}
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+              <p className="text-sm font-medium text-slate-500">
+                Active Jobs
+              </p>
+
+              <h2 className="text-3xl font-bold text-slate-900 mt-2">
+                {
+                  jobs.filter(
+                    (job) => job.status === "Active"
+                  ).length
+                }
+              </h2>
+
+              <p className="text-xs text-blue-600 mt-2">
+                Currently hiring
+              </p>
+            </div>
+
+            {/* TOTAL APPLICANTS */}
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+              <p className="text-sm font-medium text-slate-500">
+                Total Applicants
+              </p>
+
+              <h2 className="text-3xl font-bold text-slate-900 mt-2">
+                {jobs.reduce(
+                  (total, job) => total + job.applicants,
+                  0
+                )}
+              </h2>
+
+              <p className="text-xs text-green-600 mt-2">
+                Across all jobs
+              </p>
+            </div>
+
+            {/* SHORTLISTED */}
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+              <p className="text-sm font-medium text-slate-500">
+                Shortlisted
+              </p>
+
+              <h2 className="text-3xl font-bold text-slate-900 mt-2">
+                {jobs.reduce(
+                  (total, job) => total + job.shortlisted,
+                  0
+                )}
+              </h2>
+
+              <p className="text-xs text-purple-600 mt-2">
+                Potential candidates
+              </p>
+            </div>
+
+            {/* CLOSED JOBS */}
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+              <p className="text-sm font-medium text-slate-500">
+                Closed Jobs
+              </p>
+
+              <h2 className="text-3xl font-bold text-slate-900 mt-2">
+                {
+                  jobs.filter(
+                    (job) => job.status === "Closed"
+                  ).length
+                }
+              </h2>
+
+              <p className="text-xs text-slate-500 mt-2">
+                Completed postings
+              </p>
+            </div>
+
+          </section>
+
+          {/* ================= JOB SECTION ================= */}
+          <section className="bg-white rounded-2xl border border-slate-200 shadow-sm">
+
+            {/* ================= TOP ================= */}
+            <div className="p-6 md:p-8 border-b border-slate-200">
+
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+
+                {/* TITLE */}
+                <div>
+                  <h2 className="text-lg font-bold text-slate-900">
+                    Your Job Postings
+                  </h2>
+
+                  <p className="text-sm text-slate-500 mt-1">
+                    Manage all your job opportunities.
+                  </p>
+                </div>
+
+                {/* SEARCH */}
+                <div className="relative w-full lg:w-80">
+                  <input
+                    type="text"
+                    placeholder="Search jobs..."
+                    value={search}
+                    onChange={(e) =>
+                      setSearch(e.target.value)
+                    }
+                    className="w-full px-4 py-3 rounded-lg border border-slate-300 text-slate-900 outline-none placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  />
+                </div>
+
+              </div>
+
+              {/* FILTERS */}
+              <div className="flex flex-wrap gap-2 mt-6">
+                {["All", "Active", "Closed", "Draft"].map(
+                  (item) => (
+                    <button
+                      key={item}
+                      onClick={() => setFilter(item)}
+                      className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
                         filter === item
                           ? "bg-blue-600 text-white"
                           : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                       }`}
-                  >
-                    {item}
-                  </button>
-
-                )
-              )}
+                    >
+                      {item}
+                    </button>
+                  )
+                )}
+              </div>
 
             </div>
 
-          </div>
+            {/* ================= MOBILE CARDS ================= */}
+            <div className="md:hidden p-4 space-y-4">
 
+              {filteredJobs.map((job) => (
+                <div
+                  key={job.id}
+                  className="border border-slate-200 rounded-xl p-5"
+                >
 
-          {/* ================= MOBILE CARDS ================= */}
-          <div className="md:hidden p-4 space-y-4">
+                  {/* TOP */}
+                  <div className="flex items-start justify-between gap-3">
 
-            {filteredJobs.map((job) => (
+                    <div>
+                      <h3 className="font-bold text-slate-900">
+                        {job.title}
+                      </h3>
 
-              <div
-                key={job.id}
-                className="border border-slate-200
-                rounded-xl p-5"
-              >
+                      <p className="text-sm text-slate-500 mt-1">
+                        📍 {job.location}
+                      </p>
+                    </div>
 
-                <div className="flex items-start
-                  justify-between gap-3">
-
-                  <div>
-
-                    <h3 className="font-bold text-slate-900">
-                      {job.title}
-                    </h3>
-
-                    <p className="text-sm text-slate-500 mt-1">
-                      📍 {job.location}
-                    </p>
-
-                  </div>
-
-                  <span
-                    className={`px-3 py-1 rounded-full
-                    text-xs font-semibold
-                    ${
-                      job.status === "Active"
-                        ? "bg-green-50 text-green-700"
-                        : job.status === "Closed"
-                        ? "bg-slate-100 text-slate-600"
-                        : "bg-yellow-50 text-yellow-700"
-                    }`}
-                  >
-                    {job.status}
-                  </span>
-
-                </div>
-
-
-                <div className="grid grid-cols-2 gap-3 mt-5">
-
-                  <div className="bg-slate-50 rounded-lg p-3">
-                    <p className="text-xs text-slate-500">
-                      Applicants
-                    </p>
-
-                    <p className="font-bold text-slate-900 mt-1">
-                      {job.applicants}
-                    </p>
-                  </div>
-
-                  <div className="bg-slate-50 rounded-lg p-3">
-                    <p className="text-xs text-slate-500">
-                      Shortlisted
-                    </p>
-
-                    <p className="font-bold text-slate-900 mt-1">
-                      {job.shortlisted}
-                    </p>
-                  </div>
-
-                </div>
-
-
-                <div className="flex items-center
-                  justify-between mt-5">
-
-                  <span className="text-xs text-slate-400">
-                    Posted {job.date}
-                  </span>
-
-                  <div className="flex gap-2">
-
-                    <button
-                      className="px-3 py-2 rounded-lg
-                      border border-slate-300
-                      text-xs font-semibold
-                      hover:bg-slate-100"
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                        job.status === "Active"
+                          ? "bg-green-50 text-green-700"
+                          : job.status === "Closed"
+                          ? "bg-slate-100 text-slate-600"
+                          : "bg-yellow-50 text-yellow-700"
+                      }`}
                     >
-                      Edit
-                    </button>
-
-                    <button
-                      onClick={() => deleteJob(job.id)}
-                      className="px-3 py-2 rounded-lg
-                      border border-red-200
-                      text-red-600 text-xs font-semibold
-                      hover:bg-red-50"
-                    >
-                      Delete
-                    </button>
+                      {job.status}
+                    </span>
 
                   </div>
 
-                </div>
+                  {/* STATS */}
+                  <div className="grid grid-cols-2 gap-3 mt-5">
 
-              </div>
+                    <div className="bg-slate-50 rounded-lg p-3">
+                      <p className="text-xs text-slate-500">
+                        Applicants
+                      </p>
 
-            ))}
-
-          </div>
-
-
-          {/* ================= DESKTOP TABLE ================= */}
-          <div className="hidden md:block overflow-x-auto">
-
-            <table className="w-full">
-
-              <thead className="bg-slate-50">
-
-                <tr className="text-left text-xs uppercase
-                  tracking-wider text-slate-500">
-
-                  <th className="px-6 py-4 font-semibold">
-                    Job
-                  </th>
-
-                  <th className="px-6 py-4 font-semibold">
-                    Type
-                  </th>
-
-                  <th className="px-6 py-4 font-semibold">
-                    Applicants
-                  </th>
-
-                  <th className="px-6 py-4 font-semibold">
-                    Shortlisted
-                  </th>
-
-                  <th className="px-6 py-4 font-semibold">
-                    Posted
-                  </th>
-
-                  <th className="px-6 py-4 font-semibold">
-                    Status
-                  </th>
-
-                  <th className="px-6 py-4 font-semibold">
-                    Actions
-                  </th>
-
-                </tr>
-
-              </thead>
-
-
-              <tbody className="divide-y divide-slate-100">
-
-                {filteredJobs.map((job) => (
-
-                  <tr
-                    key={job.id}
-                    className="hover:bg-slate-50 transition"
-                  >
-
-                    {/* Job */}
-                    <td className="px-6 py-5">
-
-                      <div>
-
-                        <p className="font-semibold text-slate-900">
-                          {job.title}
-                        </p>
-
-                        <p className="text-sm text-slate-500 mt-1">
-                          📍 {job.location}
-                        </p>
-
-                      </div>
-
-                    </td>
-
-
-                    {/* Type */}
-                    <td className="px-6 py-5">
-
-                      <span className="text-sm text-slate-600">
-                        {job.type}
-                      </span>
-
-                    </td>
-
-
-                    {/* Applicants */}
-                    <td className="px-6 py-5">
-
-                      <span className="font-semibold text-slate-900">
+                      <p className="font-bold text-slate-900 mt-1">
                         {job.applicants}
-                      </span>
+                      </p>
+                    </div>
 
-                    </td>
+                    <div className="bg-slate-50 rounded-lg p-3">
+                      <p className="text-xs text-slate-500">
+                        Shortlisted
+                      </p>
 
-
-                    {/* Shortlisted */}
-                    <td className="px-6 py-5">
-
-                      <span className="font-semibold text-slate-900">
+                      <p className="font-bold text-slate-900 mt-1">
                         {job.shortlisted}
-                      </span>
+                      </p>
+                    </div>
 
-                    </td>
+                  </div>
 
+                  {/* BOTTOM */}
+                  <div className="flex items-center justify-between mt-5 gap-3">
 
-                    {/* Date */}
-                    <td className="px-6 py-5">
+                    <span className="text-xs text-slate-400">
+                      Posted {job.date}
+                    </span>
 
-                      <span className="text-sm text-slate-500">
-                        {job.date}
-                      </span>
+                    <div className="flex gap-2">
 
-                    </td>
-
-
-                    {/* Status */}
-                    <td className="px-6 py-5">
-
-                      <span
-                        className={`inline-flex px-3 py-1
-                        rounded-full text-xs font-semibold
-                        ${
-                          job.status === "Active"
-                            ? "bg-green-50 text-green-700"
-                            : job.status === "Closed"
-                            ? "bg-slate-100 text-slate-600"
-                            : "bg-yellow-50 text-yellow-700"
-                        }`}
+                      <button
+                        onClick={() => viewJob(job.id)}
+                        className="px-3 py-2 rounded-lg border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-100"
                       >
-                        {job.status}
-                      </span>
+                        View
+                      </button>
 
-                    </td>
+                      <button
+                        onClick={() => editJob(job.id)}
+                        className="px-3 py-2 rounded-lg border border-blue-200 text-blue-600 text-xs font-semibold hover:bg-blue-50"
+                      >
+                        Edit
+                      </button>
 
+                      <button
+                        onClick={() => deleteJob(job.id)}
+                        className="px-3 py-2 rounded-lg border border-red-200 text-red-600 text-xs font-semibold hover:bg-red-50"
+                      >
+                        Delete
+                      </button>
 
-                    {/* Actions */}
-                    <td className="px-6 py-5">
+                    </div>
 
-                      <div className="flex items-center gap-2">
+                  </div>
 
-                        <button
-                          className="px-3 py-2 rounded-lg
-                          border border-slate-300
-                          text-xs font-semibold
-                          text-slate-700
-                          hover:bg-slate-100 transition"
-                        >
-                          View
-                        </button>
+                </div>
+              ))}
 
-                        <button
-                          className="px-3 py-2 rounded-lg
-                          border border-blue-200
-                          text-xs font-semibold
-                          text-blue-600
-                          hover:bg-blue-50 transition"
-                        >
-                          Edit
-                        </button>
+            </div>
 
-                        <button
-                          onClick={() => deleteJob(job.id)}
-                          className="px-3 py-2 rounded-lg
-                          border border-red-200
-                          text-xs font-semibold
-                          text-red-600
-                          hover:bg-red-50 transition"
-                        >
-                          Delete
-                        </button>
+            {/* ================= DESKTOP TABLE ================= */}
+            <div className="hidden md:block overflow-x-auto">
 
-                      </div>
+              <table className="w-full">
 
-                    </td>
+                <thead className="bg-slate-50">
+                  <tr className="text-left text-xs uppercase tracking-wider text-slate-500">
+
+                    <th className="px-6 py-4 font-semibold">
+                      Job
+                    </th>
+
+                    <th className="px-6 py-4 font-semibold">
+                      Type
+                    </th>
+
+                    <th className="px-6 py-4 font-semibold">
+                      Applicants
+                    </th>
+
+                    <th className="px-6 py-4 font-semibold">
+                      Shortlisted
+                    </th>
+
+                    <th className="px-6 py-4 font-semibold">
+                      Posted
+                    </th>
+
+                    <th className="px-6 py-4 font-semibold">
+                      Status
+                    </th>
+
+                    <th className="px-6 py-4 font-semibold">
+                      Actions
+                    </th>
 
                   </tr>
+                </thead>
 
-                ))}
+                <tbody className="divide-y divide-slate-100">
 
-              </tbody>
+                  {filteredJobs.map((job) => (
+                    <tr
+                      key={job.id}
+                      className="hover:bg-slate-50 transition"
+                    >
 
-            </table>
+                      {/* JOB */}
+                      <td className="px-6 py-5">
+                        <div>
+                          <p className="font-semibold text-slate-900">
+                            {job.title}
+                          </p>
 
-          </div>
+                          <p className="text-sm text-slate-500 mt-1">
+                            📍 {job.location}
+                          </p>
+                        </div>
+                      </td>
 
+                      {/* TYPE */}
+                      <td className="px-6 py-5">
+                        <span className="text-sm text-slate-600">
+                          {job.type}
+                        </span>
+                      </td>
 
-          {/* ================= EMPTY STATE ================= */}
-          {filteredJobs.length === 0 && (
+                      {/* APPLICANTS */}
+                      <td className="px-6 py-5">
+                        <span className="font-semibold text-slate-900">
+                          {job.applicants}
+                        </span>
+                      </td>
 
-            <div className="py-16 text-center">
+                      {/* SHORTLISTED */}
+                      <td className="px-6 py-5">
+                        <span className="font-semibold text-slate-900">
+                          {job.shortlisted}
+                        </span>
+                      </td>
 
-              <div className="text-4xl mb-3">
-                💼
-              </div>
+                      {/* DATE */}
+                      <td className="px-6 py-5">
+                        <span className="text-sm text-slate-500">
+                          {job.date}
+                        </span>
+                      </td>
 
-              <h3 className="font-semibold text-slate-900">
-                No jobs found
-              </h3>
+                      {/* STATUS */}
+                      <td className="px-6 py-5">
+                        <span
+                          className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${
+                            job.status === "Active"
+                              ? "bg-green-50 text-green-700"
+                              : job.status === "Closed"
+                              ? "bg-slate-100 text-slate-600"
+                              : "bg-yellow-50 text-yellow-700"
+                          }`}
+                        >
+                          {job.status}
+                        </span>
+                      </td>
 
-              <p className="text-sm text-slate-500 mt-1">
-                Try changing your search or filter.
-              </p>
+                      {/* ACTIONS */}
+                      <td className="px-6 py-5">
+
+                        <div className="flex items-center gap-2">
+
+                          {/* VIEW */}
+                          <button
+                            onClick={() => viewJob(job.id)}
+                            className="px-3 py-2 rounded-lg border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition"
+                          >
+                            View
+                          </button>
+
+                          {/* EDIT */}
+                          <button
+                            onClick={() => editJob(job.id)}
+                            className="px-3 py-2 rounded-lg border border-blue-200 text-xs font-semibold text-blue-600 hover:bg-blue-50 transition"
+                          >
+                            Edit
+                          </button>
+
+                          {/* DELETE */}
+                          <button
+                            onClick={() => deleteJob(job.id)}
+                            className="px-3 py-2 rounded-lg border border-red-200 text-xs font-semibold text-red-600 hover:bg-red-50 transition"
+                          >
+                            Delete
+                          </button>
+
+                        </div>
+
+                      </td>
+
+                    </tr>
+                  ))}
+
+                </tbody>
+
+              </table>
 
             </div>
 
-          )}
+            {/* ================= EMPTY STATE ================= */}
+            {filteredJobs.length === 0 && (
+              <div className="py-16 text-center">
 
-        </section>
+                <div className="text-4xl mb-3">
+                  💼
+                </div>
 
-      </main>
+                <h3 className="font-semibold text-slate-900">
+                  No jobs found
+                </h3>
 
+                <p className="text-sm text-slate-500 mt-1">
+                  Try changing your search or filter.
+                </p>
+
+              </div>
+            )}
+
+          </section>
+
+        </main>
+
+      </div>
     </div>
   );
 }

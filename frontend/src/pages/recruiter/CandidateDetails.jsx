@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import RecruiterSideBar from "../auth/RecruiterSideBar";
 
 function CandidateDetails() {
   const navigate = useNavigate();
@@ -32,7 +33,7 @@ function CandidateDetails() {
 
   return (
     <div className="min-h-screen bg-slate-100">
-
+      <RecruiterSideBar></RecruiterSideBar>
       {/* ================= HEADER ================= */}
       <header className="bg-white border-b border-slate-200 px-6 md:px-10 py-5">
 

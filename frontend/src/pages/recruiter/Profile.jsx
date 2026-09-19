@@ -1,15 +1,14 @@
 import React, { useState } from "react";
 import SideBar from "../auth/SideBar";
-
-import { useNavigate, useLocation } from "react-router-dom";
-
+import { useNavigate } from "react-router-dom";
 
 function Profile() {
-  
   const navigate = useNavigate();
+
   const user = JSON.parse(localStorage.getItem("user") || "{}");
+
   const savedProfile = JSON.parse(
-    localStorage.getItem("candidateProfile") || "{}"
+    localStorage.getItem("recruiterProfile") || "{}"
   );
 
   const [form, setForm] = useState({
@@ -17,11 +16,13 @@ function Profile() {
     email: savedProfile.email || user.email || "",
     phone: savedProfile.phone || "",
     location: savedProfile.location || "",
-    headline: savedProfile.headline || "",
-    bio: savedProfile.bio || "",
-    skills: savedProfile.skills || "",
-    experience: savedProfile.experience || "",
-    education: savedProfile.education || "",
+    designation: savedProfile.designation || "",
+    companyName: savedProfile.companyName || "",
+    companyWebsite: savedProfile.companyWebsite || "",
+    industry: savedProfile.industry || "",
+    companySize: savedProfile.companySize || "",
+    companyDescription: savedProfile.companyDescription || "",
+    profilePic: savedProfile.profilePic || "",
   });
 
   const [saved, setSaved] = useState(false);
@@ -38,28 +39,51 @@ function Profile() {
     setSaved(false);
   };
 
+  // ================= PROFILE IMAGE =================
+  const handleProfilePic = (e) => {
+    const file = e.target.files[0];
+
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onloadend = () => {
+      setForm((prev) => ({
+        ...prev,
+        profilePic: reader.result,
+      }));
+
+      setSaved(false);
+    };
+
+    reader.readAsDataURL(file);
+  };
+
   // ================= SAVE PROFILE =================
   const handleSubmit = (e) => {
     e.preventDefault();
 
     localStorage.setItem(
-      "candidateProfile",
+      "recruiterProfile",
       JSON.stringify(form)
     );
 
-    // Also update basic user information
+    // Update basic user information
     const updatedUser = {
       ...user,
       name: form.name,
       email: form.email,
     };
 
-    localStorage.setItem("user", JSON.stringify(updatedUser));
+    localStorage.setItem(
+      "user",
+      JSON.stringify(updatedUser)
+    );
 
     setSaved(true);
 
     setTimeout(() => {
-      navigate("/candidate/dashboard");
+      navigate("/recruiter/dashboard");
     }, 1000);
   };
 
@@ -78,7 +102,7 @@ function Profile() {
           <div className="max-w-5xl mx-auto">
 
             <p className="text-xs font-bold tracking-[0.2em] text-blue-600">
-              CANDIDATE PROFILE
+              RECRUITER PROFILE
             </p>
 
             <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mt-1">
@@ -86,7 +110,7 @@ function Profile() {
             </h1>
 
             <p className="text-sm text-slate-500 mt-1">
-              Manage your personal information, skills and experience.
+              Manage your personal and company information.
             </p>
 
           </div>
@@ -105,48 +129,58 @@ function Profile() {
 
                 {/* Avatar */}
                 <div className="flex flex-col items-center gap-3">
+
                   <label className="cursor-pointer">
+
                     <div className="w-24 h-24 rounded-full overflow-hidden bg-blue-600 text-white flex items-center justify-center text-3xl font-bold shadow-sm">
+
                       {form.profilePic ? (
                         <img
-                          src={URL.createObjectURL(form.profilePic)}
+                          src={form.profilePic}
                           alt="Profile"
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        (form.name || "C").charAt(0).toUpperCase()
+                        (form.name || "R")
+                          .charAt(0)
+                          .toUpperCase()
                       )}
+
                     </div>
 
                     <input
                       type="file"
                       accept="image/*"
                       className="hidden"
-                      onChange={(e) =>
-                        setForm({
-                          ...form,
-                          profilePic: e.target.files[0],
-                        })
-                      }
+                      onChange={handleProfilePic}
                     />
+
                   </label>
 
                   <p className="text-sm text-blue-600">
                     Click to change photo
                   </p>
+
                 </div>
+
+                {/* Recruiter Basic Info */}
                 <div className="text-center sm:text-left">
 
                   <h2 className="text-2xl font-bold text-slate-900">
-                    {form.name || "Your Name"}
+                    {form.name || "Recruiter Name"}
                   </h2>
 
                   <p className="text-blue-600 font-medium mt-1">
-                    {form.headline ||
-                      "Add your professional headline"}
+                    {form.designation ||
+                      "Add your designation"}
                   </p>
 
                   <p className="text-sm text-slate-500 mt-2">
+                    {form.companyName ||
+                      "Add your company"}
+                  </p>
+
+                  <p className="text-sm text-slate-500 mt-1">
                     {form.email || "Add your email"}
                   </p>
 
@@ -170,13 +204,14 @@ function Profile() {
               </h2>
 
               <p className="text-sm text-slate-500 mt-1 mb-6">
-                Basic information recruiters can use to contact you.
+                Basic information candidates can use to contact you.
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
                 {/* Name */}
                 <div>
+
                   <label className="block text-sm font-semibold text-slate-700 mb-2">
                     Full Name
                   </label>
@@ -189,10 +224,12 @@ function Profile() {
                     required
                     className="w-full px-4 py-3 rounded-lg border border-slate-300 outline-none text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                   />
+
                 </div>
 
                 {/* Email */}
                 <div>
+
                   <label className="block text-sm font-semibold text-slate-700 mb-2">
                     Email
                   </label>
@@ -206,10 +243,12 @@ function Profile() {
                     required
                     className="w-full px-4 py-3 rounded-lg border border-slate-300 outline-none text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                   />
+
                 </div>
 
                 {/* Phone */}
                 <div>
+
                   <label className="block text-sm font-semibold text-slate-700 mb-2">
                     Phone
                   </label>
@@ -222,10 +261,12 @@ function Profile() {
                     placeholder="+91 XXXXX XXXXX"
                     className="w-full px-4 py-3 rounded-lg border border-slate-300 outline-none text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                   />
+
                 </div>
 
                 {/* Location */}
                 <div>
+
                   <label className="block text-sm font-semibold text-slate-700 mb-2">
                     Location
                   </label>
@@ -237,140 +278,175 @@ function Profile() {
                     placeholder="City, India"
                     className="w-full px-4 py-3 rounded-lg border border-slate-300 outline-none text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                   />
+
                 </div>
 
               </div>
 
             </section>
 
-            {/* ================= PROFESSIONAL INFORMATION ================= */}
+            {/* ================= RECRUITER INFORMATION ================= */}
             <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8 mb-6">
 
               <h2 className="text-xl font-bold text-slate-900">
-                Professional Information
+                Recruiter Information
               </h2>
 
               <p className="text-sm text-slate-500 mt-1 mb-6">
-                Tell recruiters about your professional background.
+                Tell candidates about your role as a recruiter.
               </p>
 
-              {/* Headline */}
+              {/* Designation */}
               <div className="mb-5">
 
                 <label className="block text-sm font-semibold text-slate-700 mb-2">
-                  Professional Headline
+                  Designation
                 </label>
 
                 <input
-                  name="headline"
-                  value={form.headline}
+                  name="designation"
+                  value={form.designation}
                   onChange={handleChange}
-                  placeholder="e.g. Full Stack Developer"
+                  placeholder="e.g. HR Manager, Talent Acquisition Specialist"
                   className="w-full px-4 py-3 rounded-lg border border-slate-300 outline-none text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 />
-
-              </div>
-
-              {/* Bio */}
-              <div className="mb-5">
-
-                <label className="block text-sm font-semibold text-slate-700 mb-2">
-                  About Me
-                </label>
-
-                <textarea
-                  name="bio"
-                  value={form.bio}
-                  onChange={handleChange}
-                  rows="5"
-                  placeholder="Write a short description about yourself..."
-                  className="w-full px-4 py-3 rounded-lg border border-slate-300 outline-none resize-none text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                />
-
-              </div>
-
-              {/* Skills */}
-              <div className="mb-5">
-
-                <label className="block text-sm font-semibold text-slate-700 mb-2">
-                  Skills
-                </label>
-
-                <input
-                  name="skills"
-                  value={form.skills}
-                  onChange={handleChange}
-                  placeholder="React, Node.js, Express, MySQL..."
-                  className="w-full px-4 py-3 rounded-lg border border-slate-300 outline-none text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                />
-
-                <p className="text-xs text-slate-400 mt-2">
-                  Separate multiple skills with commas.
-                </p>
-
-              </div>
-
-              {/* Experience */}
-              <div>
-
-                <label className="block text-sm font-semibold text-slate-700 mb-2">
-                  Experience
-                </label>
-
-                <select
-                  name="experience"
-                  value={form.experience}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-lg border border-slate-300 outline-none text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                >
-
-                  <option value="">
-                    Select experience
-                  </option>
-
-                  <option value="Fresher">
-                    Fresher
-                  </option>
-
-                  <option value="0-1 years">
-                    0 - 1 years
-                  </option>
-
-                  <option value="1-3 years">
-                    1 - 3 years
-                  </option>
-
-                  <option value="3-5 years">
-                    3 - 5 years
-                  </option>
-
-                  <option value="5+ years">
-                    5+ years
-                  </option>
-
-                </select>
 
               </div>
 
             </section>
 
-            {/* ================= EDUCATION ================= */}
+            {/* ================= COMPANY INFORMATION ================= */}
             <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8 mb-6">
 
               <h2 className="text-xl font-bold text-slate-900">
-                Education
+                Company Information
               </h2>
 
               <p className="text-sm text-slate-500 mt-1 mb-6">
-                Add your highest qualification.
+                Add information about the company you represent.
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                {/* Company Name */}
+                <div>
+
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Company Name
+                  </label>
+
+                  <input
+                    name="companyName"
+                    value={form.companyName}
+                    onChange={handleChange}
+                    placeholder="Company name"
+                    required
+                    className="w-full px-4 py-3 rounded-lg border border-slate-300 outline-none text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  />
+
+                </div>
+
+                {/* Website */}
+                <div>
+
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Company Website
+                  </label>
+
+                  <input
+                    name="companyWebsite"
+                    value={form.companyWebsite}
+                    onChange={handleChange}
+                    placeholder="https://example.com"
+                    className="w-full px-4 py-3 rounded-lg border border-slate-300 outline-none text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  />
+
+                </div>
+
+                {/* Industry */}
+                <div>
+
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Industry
+                  </label>
+
+                  <input
+                    name="industry"
+                    value={form.industry}
+                    onChange={handleChange}
+                    placeholder="e.g. Information Technology"
+                    className="w-full px-4 py-3 rounded-lg border border-slate-300 outline-none text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  />
+
+                </div>
+
+                {/* Company Size */}
+                <div>
+
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Company Size
+                  </label>
+
+                  <select
+                    name="companySize"
+                    value={form.companySize}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 rounded-lg border border-slate-300 outline-none text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  >
+
+                    <option value="">
+                      Select company size
+                    </option>
+
+                    <option value="1-10 employees">
+                      1 - 10 employees
+                    </option>
+
+                    <option value="11-50 employees">
+                      11 - 50 employees
+                    </option>
+
+                    <option value="51-200 employees">
+                      51 - 200 employees
+                    </option>
+
+                    <option value="201-500 employees">
+                      201 - 500 employees
+                    </option>
+
+                    <option value="501-1000 employees">
+                      501 - 1000 employees
+                    </option>
+
+                    <option value="1000+ employees">
+                      1000+ employees
+                    </option>
+
+                  </select>
+
+                </div>
+
+              </div>
+
+            </section>
+
+            {/* ================= COMPANY DESCRIPTION ================= */}
+            <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8 mb-6">
+
+              <h2 className="text-xl font-bold text-slate-900">
+                Company Description
+              </h2>
+
+              <p className="text-sm text-slate-500 mt-1 mb-6">
+                Give candidates a brief overview of your company.
               </p>
 
               <textarea
-                name="education"
-                value={form.education}
+                name="companyDescription"
+                value={form.companyDescription}
                 onChange={handleChange}
-                rows="4"
-                placeholder="e.g. B.Tech Computer Science - XYZ University - 2026"
+                rows="5"
+                placeholder="Write a short description about your company..."
                 className="w-full px-4 py-3 rounded-lg border border-slate-300 outline-none resize-none text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
               />
 
