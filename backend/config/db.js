@@ -9,15 +9,15 @@ const db = mysql.createPool({
     password: process.env.DB_PASSWORD
 });
 
-// db.getConnection((error, connection) => {
-//     if (error) {
-//         console.log("Unable to connect with database:", error.message);
-//         return;
-//     }
+db.getConnection((error, connection) => {
+    if (error) {
+        console.log("Unable to connect with database:", error.message);
+        return;
+    }
 
-//     console.log("Database Connected");
+    console.log("Database Connected");
 
-//     connection.release();
-// });
+    connection.release();
+});
 
 module.exports = db ;

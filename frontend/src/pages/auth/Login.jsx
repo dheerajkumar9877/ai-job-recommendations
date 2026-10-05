@@ -33,7 +33,13 @@ function Login() {
       }
 
       if (data.user) {
-        localStorage.setItem("user", JSON.stringify(data.user));
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            id: data.user.id,
+            role: data.user.role,
+          })
+        );
       }
 
       const role = data.user?.role;
@@ -46,7 +52,6 @@ function Login() {
         setError("Invalid user role.");
       }
     } catch (err) {
-      
       setError(
         err.response?.data?.message || "Login failed."
       );
@@ -98,6 +103,7 @@ function Login() {
               placeholder="you@example.com"
               value={form.email}
               onChange={handleChange}
+              autoComplete="email"
               required
               className="w-full px-4 py-3 rounded-lg border border-slate-300
               text-slate-900 outline-none transition
@@ -118,6 +124,7 @@ function Login() {
               placeholder="••••••••"
               value={form.password}
               onChange={handleChange}
+              autoComplete="current-password"
               required
               className="w-full px-4 py-3 rounded-lg border border-slate-300
               text-slate-900 outline-none transition
@@ -148,16 +155,15 @@ function Login() {
 
         </form>
 
+        {/* Forgot Password */}
         <div className="flex justify-end mt-2">
-
-        {/* Forgot */}
-        <Link
-          to="/forgot-password"
-          className="text-sm font-medium text-blue-600 hover:text-blue-700"
-        >
-          Forgot password?
-        </Link>
-      </div>
+          <Link
+            to="/forgot-password"
+            className="text-sm font-medium text-blue-600 hover:text-blue-700"
+          >
+            Forgot password?
+          </Link>
+        </div>
 
         {/* Register */}
         <p className="mt-7 text-center text-sm text-slate-500">

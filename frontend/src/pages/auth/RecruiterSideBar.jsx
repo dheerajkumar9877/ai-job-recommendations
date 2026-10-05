@@ -8,6 +8,10 @@ function RecruiterSideBar() {
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+
+    // No recruiterProfile or other application data
+    // is stored in localStorage anymore.
+
     navigate("/login");
   };
 
@@ -15,10 +19,18 @@ function RecruiterSideBar() {
     return location.pathname === path;
   };
 
+  const isManageJobsActive = () => {
+    return (
+      location.pathname === "/recruiter/manage-jobs" ||
+      location.pathname.startsWith("/recruiter/update-job/") ||
+      location.pathname.startsWith("/recruiter/view-job/")
+    );
+  };
+
   return (
     <aside className="hidden md:flex w-64 bg-slate-950 text-white flex-col fixed left-0 top-0 bottom-0 z-50">
 
-      {/* ================= BRAND ================= */}
+      {/* BRAND */}
       <div className="px-6 py-7 border-b border-slate-800">
         <button
           onClick={() => navigate("/recruiter/dashboard")}
@@ -28,7 +40,7 @@ function RecruiterSideBar() {
         </button>
       </div>
 
-      {/* ================= NAVIGATION ================= */}
+      {/* NAVIGATION */}
       <nav className="flex-1 px-4 py-6 space-y-2">
 
         {/* Dashboard */}
@@ -61,7 +73,7 @@ function RecruiterSideBar() {
         <button
           onClick={() => navigate("/recruiter/manage-jobs")}
           className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-left transition ${
-            isActive("/recruiter/manage-jobs")
+            isManageJobsActive()
               ? "bg-blue-600 text-white"
               : "text-slate-300 hover:bg-slate-800 hover:text-white"
           }`}
@@ -111,7 +123,7 @@ function RecruiterSideBar() {
 
       </nav>
 
-      {/* ================= LOGOUT ================= */}
+      {/* LOGOUT */}
       <div className="p-4 border-t border-slate-800">
         <button
           onClick={logout}

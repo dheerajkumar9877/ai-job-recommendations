@@ -29,6 +29,13 @@ function Register() {
 
     try {
       await registerUser(form);
+
+      // Clear old session/profile data after successful registration
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      localStorage.removeItem("recruiterProfile");
+      localStorage.removeItem("candidateProfile");
+
       navigate("/login");
     } catch (err) {
       setError(
@@ -121,6 +128,7 @@ function Register() {
               placeholder="Your name"
               value={form.name}
               onChange={handleChange}
+              autoComplete="name"
               required
               className="w-full px-4 py-3 rounded-lg border border-slate-300
               outline-none text-slate-900
@@ -141,6 +149,7 @@ function Register() {
               placeholder="you@example.com"
               value={form.email}
               onChange={handleChange}
+              autoComplete="email"
               required
               className="w-full px-4 py-3 rounded-lg border border-slate-300
               outline-none text-slate-900
@@ -161,6 +170,7 @@ function Register() {
               placeholder="Create a password"
               value={form.password}
               onChange={handleChange}
+              autoComplete="new-password"
               required
               className="w-full px-4 py-3 rounded-lg border border-slate-300
               outline-none text-slate-900
