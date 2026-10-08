@@ -7,7 +7,7 @@ require("dotenv").config();
 
 const authRouters = require('./routes/authRouters');
 const recruiterRouter = require('./routes/recruiterRouters');
-
+const recruiterJobRouter = require('./routes/recuiterJobRouter');
 const app = express();
 
 app.use(
@@ -23,6 +23,7 @@ app.use(express.urlencoded({ extended: true, limit: "2mb" }));
 
 app.use('/recruiter' , recruiterRouter);
 app.use('/' , authRouters);
+app.use('/recruiter/job', recruiterJobRouter);
 
 const PORT = process.env.PORT;
 

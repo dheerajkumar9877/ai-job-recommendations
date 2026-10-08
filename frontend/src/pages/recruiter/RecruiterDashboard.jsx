@@ -1,339 +1,533 @@
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import {
+  BriefcaseBusiness,
+  Users,
+  CalendarDays,
+  User,
+  Plus,
+  ArrowRight,
+  MapPin,
+  Building2,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import RecruiterSideBar from "../auth/RecruiterSideBar";
+
+const API_URL = "http://localhost:5000";
 
 function RecruiterDashboard() {
   const navigate = useNavigate();
 
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  // =========================================================
+  // USER
+  // =========================================================
 
-  const applicants = [
-    {
-      id: 1,
-      name: "Aman Sharma",
-      role: "React Developer",
-      match: 97,
-    },
-    {
-      id: 2,
-      name: "Priya Singh",
-      role: "Full Stack Developer",
-      match: 92,
-    },
-    {
-      id: 3,
-      name: "Rahul Kumar",
-      role: "Node.js Developer",
-      match: 87,
-    },
-    {
-      id: 4,
-      name: "Neha Verma",
-      role: "UI Developer",
-      match: 82,
-    },
-  ];
+  const getStoredUser = () => {
+    try {
+      return JSON.parse(
+        localStorage.getItem("user") || "{}"
+      );
+    } catch {
+      return {};
+    }
+  };
 
-  const hiringData = [45, 68, 54, 82, 64, 91, 76];
-  const days = ["M", "T", "W", "T", "F", "S", "S"];
+  const getUserId = () => {
+    const storedUser = getStoredUser();
+
+    return Number(
+      storedUser?.id ??
+        storedUser?.user_id ??
+        storedUser?.userId
+    );
+  };
+
+  const [user, setUser] = useState(
+    getStoredUser()
+  );
+
+  // =========================================================
+  // PROFILE
+  // =========================================================
+
+  const [profile, setProfile] = useState({
+    name: "",
+    designation: "",
+    companyName: "",
+    location: "",
+    profile_img: "",
+  });
+
+  const [loading, setLoading] = useState(true);
+
+  // =========================================================
+  // DASHBOARD DATA
+  // =========================================================
+
+  const [stats, setStats] = useState({
+    jobs: 0,
+    applicants: 0,
+    interviews: 0,
+  });
+
+  // =========================================================
+  // FETCH PROFILE FROM DATABASE
+  // =========================================================
+
+  const fetchProfile = async () => {
+    try {
+      const userId = getUserId();
+
+      if (!userId || Number.isNaN(userId)) {
+        return;
+      }
+
+      const response = await axios.get(
+        `${API_URL}/recruiter/profile/${userId}`
+      );
+
+      const data = response.data?.profile;
+
+      if (!data) {
+        return;
+      }
+
+      const latestProfile = {
+        name: data.name || user.name || "Recruiter",
+        designation: data.des || "Recruiter",
+        companyName: data.c_name || "",
+        location: data.location || "",
+        profile_img:
+          data.profile_img ||
+          user.profile_img ||
+          "",
+      };
+
+      setProfile(latestProfile);
+
+      // Keep ONLY name and image in localStorage
+      const updatedUser = {
+        ...user,
+        name: latestProfile.name,
+        profile_img: latestProfile.profile_img,
+      };
+
+      localStorage.setItem(
+        "user",
+        JSON.stringify(updatedUser)
+      );
+
+      setUser(updatedUser);
+    } catch (error) {
+      console.error(
+        "Failed to fetch recruiter profile:",
+        error
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // =========================================================
+  // INITIAL LOAD
+  // =========================================================
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  // =========================================================
+  // LISTEN FOR PROFILE UPDATE
+  // =========================================================
+
+  useEffect(() => {
+    const handleProfileUpdated = (event) => {
+      const storedUser = getStoredUser();
+
+      const updatedName =
+        event.detail?.name ||
+        storedUser.name ||
+        "Recruiter";
+
+      const updatedImage =
+        event.detail?.profile_img ||
+        storedUser.profile_img ||
+        "";
+
+      setUser({
+        ...storedUser,
+        name: updatedName,
+        profile_img: updatedImage,
+      });
+
+      setProfile((prev) => ({
+        ...prev,
+        name: updatedName,
+        profile_img: updatedImage,
+      }));
+    };
+
+    window.addEventListener(
+      "profileUpdated",
+      handleProfileUpdated
+    );
+
+    return () => {
+      window.removeEventListener(
+        "profileUpdated",
+        handleProfileUpdated
+      );
+    };
+  }, []);
+
+  // =========================================================
+  // DISPLAY VALUES
+  // =========================================================
+
+  const displayName =
+    profile.name ||
+    user.name ||
+    "Recruiter";
+
+  const profileImage =
+    profile.profile_img ||
+    user.profile_img ||
+    "";
+
+  // =========================================================
+  // LOADING
+  // =========================================================
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <RecruiterSideBar />
+
+        <main className="min-h-screen lg:ml-64">
+          <div className="flex min-h-screen items-center justify-center">
+            <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-emerald-600" />
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // =========================================================
+  // DASHBOARD
+  // =========================================================
 
   return (
-    <div className="min-h-screen bg-slate-100 flex">
-      {/* ================= SIDEBAR ================= */}
+    <div className="min-h-screen bg-gray-50">
       <RecruiterSideBar />
 
-      {/* ================= MAIN ================= */}
-      <main className="w-full md:ml-64">
-        {/* ================= TOPBAR ================= */}
-        <header className="bg-white border-b border-slate-200 px-6 md:px-10 py-5">
-          <div className="flex items-center justify-between gap-4">
+      <main className="min-h-screen lg:ml-64">
+
+        {/* HEADER */}
+        <header className="border-b border-gray-200 bg-white px-4 py-5 sm:px-6 lg:px-8">
+
+          <div className="mx-auto flex max-w-7xl items-center justify-between">
+
             <div>
-              <p className="text-xs font-bold tracking-[0.2em] text-blue-600">
-                RECRUITER DASHBOARD
+              <p className="text-sm font-medium text-emerald-600">
+                Recruiter Dashboard
               </p>
 
-              <h1 className="text-2xl md:text-3xl font-bold text-slate-900 mt-1">
-                Welcome, {user.name || "Recruiter"} 👋
+              <h1 className="mt-1 text-2xl font-bold text-gray-900 sm:text-3xl">
+                Welcome, {displayName}
               </h1>
+
+              <p className="mt-1 text-sm text-gray-500">
+                Manage your jobs, applicants and interviews.
+              </p>
             </div>
 
-            <div className="flex items-center gap-3">
-              {/* POST JOB */}
-              <button
-                onClick={() => navigate("/recruiter/post-job")}
-                className="hidden sm:block px-5 py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition shadow-sm"
-              >
-                + Post a job
-              </button>
+            {/* PROFILE */}
+            <div className="hidden items-center gap-3 sm:flex">
 
-              {/* PROFILE */}
-              <button
-                onClick={() => navigate("/recruiter/profile")}
-                className="w-11 h-11 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-lg hover:bg-blue-700 transition"
-                title="Profile"
-              >
-                {(user.name || "R").charAt(0).toUpperCase()}
-              </button>
+              <div className="text-right">
+                <p className="text-sm font-semibold text-gray-900">
+                  {displayName}
+                </p>
+
+                <p className="text-xs text-gray-500">
+                  {profile.designation ||
+                    "Recruiter"}
+                </p>
+              </div>
+
+              <div className="h-12 w-12 overflow-hidden rounded-full border-2 border-emerald-100 bg-emerald-50">
+
+                {profileImage ? (
+                  <img
+                    src={profileImage}
+                    alt={displayName}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-emerald-600">
+                    <User size={23} />
+                  </div>
+                )}
+
+              </div>
             </div>
+
           </div>
         </header>
 
-        {/* ================= CONTENT ================= */}
-        <div className="p-6 md:p-10">
-          {/* ================= METRICS ================= */}
-          <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-            {/* ACTIVE JOBS */}
-            <button
-              onClick={() => navigate("/recruiter/jobs")}
-              className="text-left bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md hover:border-blue-300 transition"
-            >
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm text-slate-500">Active Jobs</p>
+        {/* CONTENT */}
+        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
 
-                  <h2 className="text-4xl font-bold text-slate-900 mt-3">
-                    12
+          {/* PROFILE CARD */}
+          <section className="mb-6 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+
+            <div className="h-28 bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600" />
+
+            <div className="px-5 pb-6 sm:px-7">
+
+              <div className="-mt-10 flex flex-col gap-4 sm:flex-row sm:items-end">
+
+                <div className="h-20 w-20 overflow-hidden rounded-2xl border-4 border-white bg-emerald-50 shadow-lg">
+
+                  {profileImage ? (
+                    <img
+                      src={profileImage}
+                      alt={displayName}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-emerald-600">
+                      <User size={35} />
+                    </div>
+                  )}
+
+                </div>
+
+                <div className="flex-1">
+
+                  <h2 className="text-xl font-bold text-gray-900">
+                    {displayName}
                   </h2>
 
-                  <p className="text-sm text-green-600 font-medium mt-2">
-                    +3 this month
-                  </p>
-                </div>
-
-                <div className="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl">
-                  💼
-                </div>
-              </div>
-            </button>
-
-            {/* APPLICANTS */}
-            <button
-              onClick={() => navigate("/recruiter/applicants")}
-              className="text-left bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md hover:border-purple-300 transition"
-            >
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm text-slate-500">
-                    Total Applicants
+                  <p className="text-sm text-gray-500">
+                    {profile.designation ||
+                      "Recruiter"}
                   </p>
 
-                  <h2 className="text-4xl font-bold text-slate-900 mt-3">
-                    248
-                  </h2>
+                  {profile.companyName && (
+                    <div className="mt-1 flex items-center gap-2 text-sm text-gray-500">
+                      <Building2 size={14} />
+                      {profile.companyName}
+                    </div>
+                  )}
 
-                  <p className="text-sm text-green-600 font-medium mt-2">
-                    +18% this month
-                  </p>
-                </div>
+                  {profile.location && (
+                    <div className="mt-1 flex items-center gap-2 text-sm text-gray-500">
+                      <MapPin size={14} />
+                      {profile.location}
+                    </div>
+                  )}
 
-                <div className="w-11 h-11 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl">
-                  ♙
-                </div>
-              </div>
-            </button>
-
-            {/* SHORTLISTED */}
-            <button
-              onClick={() => navigate("/recruiter/applicants?status=shortlisted")}
-              className="text-left bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md hover:border-green-300 transition"
-            >
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm text-slate-500">Shortlisted</p>
-
-                  <h2 className="text-4xl font-bold text-slate-900 mt-3">
-                    42
-                  </h2>
-
-                  <p className="text-sm text-slate-500 mt-2">
-                    17% of applicants
-                  </p>
-                </div>
-
-                <div className="w-11 h-11 rounded-xl bg-green-50 text-green-600 flex items-center justify-center text-xl">
-                  ✓
-                </div>
-              </div>
-            </button>
-
-            {/* INTERVIEWS */}
-            <button
-              onClick={() => navigate("/recruiter/interviews")}
-              className="text-left bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md hover:border-orange-300 transition"
-            >
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm text-slate-500">Interviews</p>
-
-                  <h2 className="text-4xl font-bold text-slate-900 mt-3">
-                    18
-                  </h2>
-
-                  <p className="text-sm text-blue-600 font-medium mt-2">
-                    6 upcoming
-                  </p>
-                </div>
-
-                <div className="w-11 h-11 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center text-xl">
-                  ◷
-                </div>
-              </div>
-            </button>
-          </section>
-
-          {/* ================= LOWER GRID ================= */}
-          <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-            {/* ================= RECENT APPLICANTS ================= */}
-            <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm">
-              <div className="flex items-center justify-between px-6 py-5 border-b border-slate-200">
-                <div>
-                  <h3 className="text-lg font-bold text-slate-900">
-                    Recent applicants
-                  </h3>
-
-                  <p className="text-sm text-slate-500 mt-1">
-                    Latest candidates who applied
-                  </p>
                 </div>
 
                 <button
-                  onClick={() => navigate("/recruiter/applicants")}
-                  className="text-sm font-semibold text-blue-600 hover:text-blue-700"
+                  onClick={() =>
+                    navigate("/recruiter/profile")
+                  }
+                  className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
                 >
-                  View all →
+                  Edit Profile
                 </button>
-              </div>
 
-              <div className="divide-y divide-slate-100">
-                {applicants.map((applicant) => (
-                  <button
-                    key={applicant.id}
-                    onClick={() =>
-                      navigate(`/recruiter/applicants/${applicant.id}`)
-                    }
-                    className="w-full px-6 py-5 flex items-center gap-4 hover:bg-slate-50 transition text-left"
-                  >
-                    {/* AVATAR */}
-                    <div className="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold shrink-0">
-                      {applicant.name.charAt(0).toUpperCase()}
-                    </div>
-
-                    {/* INFORMATION */}
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold text-slate-900">
-                        {applicant.name}
-                      </h4>
-
-                      <p className="text-sm text-slate-500 mt-1">
-                        {applicant.role}
-                      </p>
-                    </div>
-
-                    {/* MATCH */}
-                    <div className="text-right">
-                      <div className="text-lg font-bold text-green-600">
-                        {applicant.match}%
-                      </div>
-
-                      <div className="text-xs text-slate-400">
-                        Match
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* ================= HIRING OVERVIEW ================= */}
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-              <div>
-                <h3 className="text-lg font-bold text-slate-900">
-                  Hiring overview
-                </h3>
-
-                <p className="text-sm text-slate-500 mt-1">
-                  Applications this week
-                </p>
-              </div>
-
-              {/* CHART */}
-              <div className="h-56 mt-8 flex items-end justify-between gap-3">
-                {hiringData.map((height, index) => (
-                  <div
-                    key={index}
-                    className="flex-1 h-full flex flex-col justify-end items-center gap-3"
-                  >
-                    <div
-                      className="w-full max-w-8 rounded-t-md bg-blue-600 hover:bg-blue-700 transition"
-                      style={{
-                        height: `${height}%`,
-                      }}
-                    />
-
-                    <span className="text-xs font-medium text-slate-400">
-                      {days[index]}
-                    </span>
-                  </div>
-                ))}
               </div>
             </div>
           </section>
 
-          {/* ================= QUICK ACTIONS ================= */}
-          <section className="mt-6">
-            <h3 className="text-lg font-bold text-slate-900 mb-4">
-              Quick actions
-            </h3>
+          {/* STAT CARDS */}
+          <section className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {/* POST JOB */}
+            {/* JOBS */}
+            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+
+              <div className="flex items-center justify-between">
+
+                <div>
+                  <p className="text-sm font-medium text-gray-500">
+                    Total Jobs
+                  </p>
+
+                  <h2 className="mt-2 text-3xl font-bold text-gray-900">
+                    {stats.jobs}
+                  </h2>
+                </div>
+
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                  <BriefcaseBusiness size={23} />
+                </div>
+
+              </div>
+
               <button
-                onClick={() => navigate("/recruiter/post-job")}
-                className="bg-white border border-slate-200 rounded-xl p-5 text-left hover:border-blue-300 hover:shadow-sm transition"
+                onClick={() =>
+                  navigate("/recruiter/manage-jobs")
+                }
+                className="mt-5 flex items-center gap-2 text-sm font-semibold text-emerald-600 hover:text-emerald-700"
               >
-                <div className="text-2xl mb-3">＋</div>
-
-                <h4 className="font-semibold text-slate-900">
-                  Post a Job
-                </h4>
-
-                <p className="text-sm text-slate-500 mt-1">
-                  Create a new job opening
-                </p>
+                Manage jobs
+                <ArrowRight size={16} />
               </button>
 
-              {/* VIEW APPLICANTS */}
+            </div>
+
+            {/* APPLICANTS */}
+            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+
+              <div className="flex items-center justify-between">
+
+                <div>
+                  <p className="text-sm font-medium text-gray-500">
+                    Applicants
+                  </p>
+
+                  <h2 className="mt-2 text-3xl font-bold text-gray-900">
+                    {stats.applicants}
+                  </h2>
+                </div>
+
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                  <Users size={23} />
+                </div>
+
+              </div>
+
               <button
-                onClick={() => navigate("/recruiter/applicants")}
-                className="bg-white border border-slate-200 rounded-xl p-5 text-left hover:border-purple-300 hover:shadow-sm transition"
+                onClick={() =>
+                  navigate("/recruiter/applicants")
+                }
+                className="mt-5 flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700"
               >
-                <div className="text-2xl mb-3">♙</div>
-
-                <h4 className="font-semibold text-slate-900">
-                  View Applicants
-                </h4>
-
-                <p className="text-sm text-slate-500 mt-1">
-                  Review your candidates
-                </p>
+                View applicants
+                <ArrowRight size={16} />
               </button>
 
-              {/* INTERVIEWS */}
+            </div>
+
+            {/* INTERVIEWS */}
+            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+
+              <div className="flex items-center justify-between">
+
+                <div>
+                  <p className="text-sm font-medium text-gray-500">
+                    Interviews
+                  </p>
+
+                  <h2 className="mt-2 text-3xl font-bold text-gray-900">
+                    {stats.interviews}
+                  </h2>
+                </div>
+
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
+                  <CalendarDays size={23} />
+                </div>
+
+              </div>
+
               <button
-                onClick={() => navigate("/recruiter/interviews")}
-                className="bg-white border border-slate-200 rounded-xl p-5 text-left hover:border-orange-300 hover:shadow-sm transition"
+                onClick={() =>
+                  navigate("/recruiter/interviews")
+                }
+                className="mt-5 flex items-center gap-2 text-sm font-semibold text-purple-600 hover:text-purple-700"
               >
-                <div className="text-2xl mb-3">◷</div>
-
-                <h4 className="font-semibold text-slate-900">
-                  Schedule Interview
-                </h4>
-
-                <p className="text-sm text-slate-500 mt-1">
-                  Manage upcoming interviews
-                </p>
+                View interviews
+                <ArrowRight size={16} />
               </button>
+
+            </div>
+
+          </section>
+
+          {/* QUICK ACTIONS */}
+          <section className="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+
+            <div className="mb-5">
+              <h2 className="text-lg font-bold text-gray-900">
+                Quick Actions
+              </h2>
+
+              <p className="mt-1 text-sm text-gray-500">
+                Quickly manage your recruitment activities.
+              </p>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+
+              <button
+                onClick={() =>
+                  navigate("/recruiter/create-job")
+                }
+                className="flex items-center gap-4 rounded-xl border border-gray-200 p-4 text-left transition hover:border-emerald-300 hover:bg-emerald-50"
+              >
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
+                  <Plus size={22} />
+                </div>
+
+                <div>
+                  <p className="font-semibold text-gray-900">
+                    Post a Job
+                  </p>
+
+                  <p className="text-xs text-gray-500">
+                    Create a new job vacancy
+                  </p>
+                </div>
+              </button>
+
+              <button
+                onClick={() =>
+                  navigate("/recruiter/applicants")
+                }
+                className="flex items-center gap-4 rounded-xl border border-gray-200 p-4 text-left transition hover:border-blue-300 hover:bg-blue-50"
+              >
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
+                  <Users size={22} />
+                </div>
+
+                <div>
+                  <p className="font-semibold text-gray-900">
+                    View Applicants
+                  </p>
+
+                  <p className="text-xs text-gray-500">
+                    Review candidate applications
+                  </p>
+                </div>
+              </button>
+
+              <button
+                onClick={() =>
+                  navigate("/recruiter/profile")
+                }
+                className="flex items-center gap-4 rounded-xl border border-gray-200 p-4 text-left transition hover:border-purple-300 hover:bg-purple-50"
+              >
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-purple-100 text-purple-600">
+                  <Building2 size={22} />
+                </div>
+
+                <div>
+                  <p className="font-semibold text-gray-900">
+                    Company Profile
+                  </p>
+
+                  <p className="text-xs text-gray-500">
+                    Update your company information
+                  </p>
+                </div>
+              </button>
+
             </div>
           </section>
+
         </div>
       </main>
     </div>

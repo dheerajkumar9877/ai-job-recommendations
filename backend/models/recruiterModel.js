@@ -2,7 +2,6 @@ const db = require("../config/db");
 
 class Recruiter {
 
-    // ================= CREATE PROFILE =================
     async createProfile(data) {
         const {
             user_id,
@@ -52,8 +51,6 @@ class Recruiter {
         return result;
     }
 
-
-    // ================= UPDATE PROFILE =================
     async updateProfile(data) {
 
         const {
@@ -97,7 +94,6 @@ class Recruiter {
             c_des,
             user_id
         ];
-        console.log(profile_img);
 
         const [result] = await db.execute(sql, values);
 

@@ -25,7 +25,8 @@ import CandidateDetails from "./pages/recruiter/CandidateDetails";
 import CompanyProfile from "./pages/recruiter/CompanyProfile";
 import RecruiterInterviews from "./pages/recruiter/Interviews";
 import RecruiterProfile from "./pages/recruiter/Profile";
-
+import EditJob from "./pages/recruiter/EditJob";
+import ViewJob from "./pages/recruiter/ViewJob";
 
 function App() {
   return (
@@ -53,7 +54,9 @@ function App() {
         <Route path="/recruiter/applicants" element={<Applicants />} />
         <Route path="/recruiter/candidate/:id" element={<CandidateDetails />} />
         <Route path="/recruiter/interviews" element={<RecruiterInterviews />} />
+        <Route path="/recruiter/job/update-job/:user_id/:job_id" element={<EditJob />}/>
         <Route path="/recruiter/company-profile" element={<CompanyProfile />} />
+        <Route path="/recruiter/job/view-job/:user_id/:job_id" element={<ViewJob />}/>
       </Routes>
 
     </BrowserRouter>

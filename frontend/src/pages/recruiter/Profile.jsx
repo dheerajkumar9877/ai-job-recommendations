@@ -22,14 +22,9 @@ const API_URL = "http://localhost:5000";
 
 function Profile() {
   const navigate = useNavigate();
-  // =========================================================
-  // USER
-  // =========================================================
+
   const [user, setUser] = useState(null);
 
-  // =========================================================
-  // PROFILE
-  // =========================================================
   const [profileExists, setProfileExists] = useState(false);
 
   const [form, setForm] = useState({
@@ -46,9 +41,6 @@ function Profile() {
     profilePic: "",
   });
 
-  // =========================================================
-  // STATES
-  // =========================================================
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
@@ -56,25 +48,42 @@ function Profile() {
   const [generalError, setGeneralError] = useState("");
 
   // =========================================================
-  // GET LOGGED-IN USER + LOAD PROFILE
+  // GET LOGGED-IN USER
   // =========================================================
+
+  const getStoredUser = () => {
+    try {
+      return JSON.parse(localStorage.getItem("user") || "{}");
+    } catch {
+      return {};
+    }
+  };
+
+  const getUserId = () => {
+    const storedUser = getStoredUser();
+
+    return Number(
+      storedUser?.id ??
+        storedUser?.user_id ??
+        storedUser?.userId
+    );
+  };
+
+  // =========================================================
+  // LOAD PROFILE FROM DATABASE
+  // =========================================================
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const storedUser = JSON.parse(
-          localStorage.getItem("user") || "{}"
-        );
+        const storedUser = getStoredUser();
 
-        // Support all possible ID names
         const userId = Number(
           storedUser?.id ??
-          storedUser?.user_id ??
-          storedUser?.userId
+            storedUser?.user_id ??
+            storedUser?.userId
         );
 
-        // -----------------------------------------------------
-        // USER ID NOT FOUND
-        // -----------------------------------------------------
         if (!userId || Number.isNaN(userId)) {
           setGeneralError(
             "User ID not found. Please logout and login again."
@@ -83,15 +92,11 @@ function Profile() {
           return;
         }
 
-        // Save user in React state
         setUser({
           ...storedUser,
           id: userId,
         });
 
-        // -----------------------------------------------------
-        // GET PROFILE FROM DATABASE
-        // -----------------------------------------------------
         const response = await axios.get(
           `${API_URL}/recruiter/profile/${userId}`
         );
@@ -115,27 +120,20 @@ function Profile() {
             profilePic: profile.profile_img || "",
           });
         } else {
-          // Profile doesn't exist yet.
-          // Use only login information for initial values.
           setProfileExists(false);
 
           setForm((prev) => ({
             ...prev,
             name: storedUser.name || "",
             email: storedUser.email || "",
+            profilePic: storedUser.profile_img || "",
           }));
         }
       } catch (error) {
-        console.error(
-          "Failed to load recruiter profile:",
-          error
-        );
+        console.error("Failed to load recruiter profile:", error);
 
-        // Profile doesn't exist yet
         if (error.response?.status === 404) {
-          const storedUser = JSON.parse(
-            localStorage.getItem("user") || "{}"
-          );
+          const storedUser = getStoredUser();
 
           setProfileExists(false);
 
@@ -143,6 +141,7 @@ function Profile() {
             ...prev,
             name: storedUser.name || "",
             email: storedUser.email || "",
+            profilePic: storedUser.profile_img || "",
           }));
 
           return;
@@ -163,6 +162,7 @@ function Profile() {
   // =========================================================
   // INPUT CHANGE
   // =========================================================
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -181,8 +181,9 @@ function Profile() {
   };
 
   // =========================================================
-  // IMAGE UPLOAD
+  // IMAGE CHANGE
   // =========================================================
+
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
 
@@ -196,7 +197,6 @@ function Profile() {
       return;
     }
 
-    // Maximum 1.5 MB
     if (file.size > 1.5 * 1024 * 1024) {
       setErrors((prev) => ({
         ...prev,
@@ -228,6 +228,7 @@ function Profile() {
   // =========================================================
   // VALIDATION
   // =========================================================
+
   const validateForm = () => {
     const newErrors = {};
 
@@ -250,8 +251,7 @@ function Profile() {
     }
 
     if (!form.phone.trim()) {
-      newErrors.phone =
-        "Phone number is required.";
+      newErrors.phone = "Phone number is required.";
     } else if (
       !/^[0-9+\-\s()]{7,20}$/.test(
         form.phone.trim()
@@ -262,8 +262,7 @@ function Profile() {
     }
 
     if (!form.location.trim()) {
-      newErrors.location =
-        "Location is required.";
+      newErrors.location = "Location is required.";
     }
 
     if (!form.designation.trim()) {
@@ -299,6 +298,7 @@ function Profile() {
   // =========================================================
   // BACKEND ERROR MAPPING
   // =========================================================
+
   const mapBackendErrors = (data) => {
     const mappedErrors = {};
 
@@ -356,6 +356,7 @@ function Profile() {
   // =========================================================
   // SAVE / UPDATE PROFILE
   // =========================================================
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -363,27 +364,18 @@ function Profile() {
     setGeneralError("");
     setErrors({});
 
-    // Validate form
     if (!validateForm()) {
       return;
     }
 
-    // -------------------------------------------------------
-    // ALWAYS GET USER ID FROM LOCAL STORAGE
-    // -------------------------------------------------------
-    const storedUser = JSON.parse(
-      localStorage.getItem("user") || "{}"
-    );
+    const storedUser = getStoredUser();
 
     const userId = Number(
       storedUser?.id ??
-      storedUser?.user_id ??
-      storedUser?.userId
+        storedUser?.user_id ??
+        storedUser?.userId
     );
 
-    // -------------------------------------------------------
-    // USER ID CHECK
-    // -------------------------------------------------------
     if (!userId || Number.isNaN(userId)) {
       setGeneralError(
         "User ID not found. Please logout and login again."
@@ -391,28 +383,17 @@ function Profile() {
       return;
     }
 
-    // -------------------------------------------------------
-    // REQUEST DATA
-    // -------------------------------------------------------
     const requestData = {
       user_id: userId,
-
       name: form.name.trim(),
       email: form.email.trim(),
       phone: form.phone.trim(),
       location: form.location.trim(),
-
       des: form.designation.trim(),
-
       c_name: form.companyName.trim(),
-
       c_website: form.companyWebsite.trim(),
-
       c_des: form.companyDescription.trim(),
-
       profile_img: form.profilePic || null,
-
-      // Send these only if your backend/database supports them
       industry: form.industry.trim(),
       companySize: form.companySize,
     };
@@ -427,16 +408,46 @@ function Profile() {
           headers: {
             "Content-Type": "application/json",
           },
-
-          maxContentLength:
-            3 * 1024 * 1024,
-
-          maxBodyLength:
-            3 * 1024 * 1024,
+          maxContentLength: 3 * 1024 * 1024,
+          maxBodyLength: 3 * 1024 * 1024,
         }
       );
 
+      // =====================================================
+      // SAVE ONLY NAME + PROFILE IMAGE TO LOCAL STORAGE
+      // =====================================================
+
+      const updatedUser = {
+        ...storedUser,
+        id: userId,
+        name: form.name.trim(),
+        profile_img: form.profilePic || "",
+      };
+
+      localStorage.setItem(
+        "user",
+        JSON.stringify(updatedUser)
+      );
+
+      // Update React state
+      setUser(updatedUser);
+
+      // =====================================================
+      // IMPORTANT:
+      // Tell Sidebar + Dashboard that profile changed
+      // =====================================================
+
+      window.dispatchEvent(
+        new CustomEvent("profileUpdated", {
+          detail: {
+            name: form.name.trim(),
+            profile_img: form.profilePic || "",
+          },
+        })
+      );
+
       setProfileExists(true);
+
       setSuccessMessage(
         response.data?.message ||
           "Profile saved successfully"
@@ -445,19 +456,17 @@ function Profile() {
       setErrors({});
       setGeneralError("");
 
+      // Clear success message
       setTimeout(() => {
         setSuccessMessage("");
       }, 4000);
 
+      // Go to dashboard
       setTimeout(() => {
         navigate("/recruiter/dashboard");
-      }, 1500);
-
+      }, 1200);
     } catch (error) {
-      console.error(
-        "PROFILE SAVE ERROR:",
-        error
-      );
+      console.error("PROFILE SAVE ERROR:", error);
 
       if (error.response) {
         console.error(
@@ -466,9 +475,7 @@ function Profile() {
         );
 
         const backendErrors =
-          mapBackendErrors(
-            error.response.data
-          );
+          mapBackendErrors(error.response.data);
 
         if (
           Object.keys(backendErrors).length > 0
@@ -498,6 +505,7 @@ function Profile() {
   // =========================================================
   // FIELD ERROR
   // =========================================================
+
   const FieldError = ({ name }) => {
     if (!errors[name]) {
       return <div className="min-h-[20px]" />;
@@ -516,6 +524,7 @@ function Profile() {
   // =========================================================
   // INPUT CLASS
   // =========================================================
+
   const inputClass = (field) =>
     `w-full rounded-xl border px-4 py-3 pl-11 text-sm outline-none transition ${
       errors[field]
@@ -524,11 +533,12 @@ function Profile() {
     }`;
 
   // =========================================================
-  // PAGE LOADING
+  // LOADING
   // =========================================================
+
   if (pageLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
         <Loader2
           size={32}
           className="animate-spin text-emerald-600"
@@ -540,11 +550,12 @@ function Profile() {
   // =========================================================
   // UI
   // =========================================================
+
   return (
     <div className="min-h-screen bg-gray-50">
       <SideBar />
 
-      <main className="lg:ml-64 min-h-screen">
+      <main className="min-h-screen lg:ml-64">
 
         {/* HEADER */}
         <header className="sticky top-0 z-30 border-b border-gray-200 bg-white/95 px-4 py-4 backdrop-blur sm:px-6 lg:px-8">
@@ -617,10 +628,10 @@ function Profile() {
 
               <div className="-mt-12 flex flex-col gap-5 sm:-mt-16 sm:flex-row sm:items-end">
 
-                {/* PROFILE IMAGE */}
+                {/* IMAGE */}
                 <div className="relative w-fit">
-                  <div className="h-24 w-24 overflow-hidden rounded-2xl border-4 border-white bg-emerald-50 shadow-lg sm:h-32 sm:w-32">
 
+                  <div className="h-24 w-24 overflow-hidden rounded-2xl border-4 border-white bg-emerald-50 shadow-lg sm:h-32 sm:w-32">
                     {form.profilePic ? (
                       <img
                         src={form.profilePic}
@@ -632,7 +643,6 @@ function Profile() {
                         <User size={48} />
                       </div>
                     )}
-
                   </div>
 
                   <label
@@ -653,6 +663,7 @@ function Profile() {
 
                 {/* PROFILE TITLE */}
                 <div className="flex-1 pb-1">
+
                   <h2 className="text-xl font-bold text-gray-900 sm:text-2xl">
                     {form.name || "Your Name"}
                   </h2>
@@ -668,6 +679,7 @@ function Profile() {
                       {form.companyName}
                     </div>
                   )}
+
                 </div>
               </div>
 
@@ -983,27 +995,21 @@ function Profile() {
                       <option value="">
                         Select company size
                       </option>
-
                       <option value="1-10">
                         1-10 employees
                       </option>
-
                       <option value="11-50">
                         11-50 employees
                       </option>
-
                       <option value="51-200">
                         51-200 employees
                       </option>
-
                       <option value="201-500">
                         201-500 employees
                       </option>
-
                       <option value="501-1000">
                         501-1000 employees
                       </option>
-
                       <option value="1000+">
                         1000+ employees
                       </option>
